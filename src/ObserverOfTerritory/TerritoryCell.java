@@ -1,11 +1,11 @@
 package ObserverOfTerritory;
 
-public class CellTerritory {
+public class TerritoryCell {
 	
 	private int priority;
 	private double saturation = 0, rateDecrement = 0.03;
 	
-	public CellTerritory(int priority)
+	public TerritoryCell(int priority)
 	{
 		this.priority = priority;
 	}
@@ -40,7 +40,10 @@ public class CellTerritory {
 	final public void resetSaturation()
 	{
 		if ( this.priority > 0)
+		{
 			this.saturation = 0;
+		}
+			
 	}
 
 	/** устанавливает удовлетворенность квадрата территории в максимальное значение */

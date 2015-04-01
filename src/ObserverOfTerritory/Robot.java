@@ -1,8 +1,5 @@
 package ObserverOfTerritory;
 
-import java.util.ArrayList;
-import java.util.Random;
-
 public class Robot	{
 
 	private int posX, posY;
@@ -20,7 +17,7 @@ public class Robot	{
 	
 	final public void step()
 	{
-		algorithm.algorithm(this);
+		algorithm.selectNextPosition(this);
 	}
 	
 	final public void setAlgorithm(IAlgorithm alg)
@@ -33,40 +30,18 @@ public class Robot	{
 		return territory;
 	}
 	
-	private void generatePositionRobots()
-	{
-		Random ran = new Random();
-		ArrayList<Robot> robots = territory.getRobots();
-		for(Robot rob: robots)
-		{
-			rob.setPosition( ran.nextInt(territory.getSizeX()), ran.nextInt(territory.getSizeY())); 
-		}
-		
-		for(int i = 0; i < robots.size(); i++)
-		{
-			for(int j = 0; j < robots.size(); j++)
-			{
-				if (i == j) continue;
-				if( (robots.get(i).getPosX() == robots.get(j).getPosX()) && (robots.get(i).getPosY() == robots.get(j).getPosY()) 
-					|| (territory.getCellTerritory(robots.get(i).getPosX(), robots.get(i).getPosY()).getPriority() <= 0) )
-				{
-					robots.get(i).setPosition( ran.nextInt(territory.getSizeX()), ran.nextInt(territory.getSizeY()) );
-					j = 0;
-				}
-			}
-		}
-	}
+	
 	
 	final public void setTerritory(Territory ter)
 	{
 		this.territory = ter;
 		//ter.setRobots(this);
-		generatePositionRobots();
+		//generatePositionRobots();
 	}
 	
-	public CellTerritory[] lookAround()
+	public TerritoryCell[] lookAround()
 	{
-		CellTerritory[] ct = new CellTerritory[8];
+		TerritoryCell[] ct = new TerritoryCell[8];
 		int i = 0;
 		for ( int x=-1; x<=1; x++ )
 		{
@@ -77,7 +52,7 @@ public class Robot	{
 					continue;
 				}
 				//System.out.println("õ="+x+" y="+y);
-				ct[i++] = territory.getCellTerritory(posX+x, posY+y);
+				ct[i++] = territory.getTerritoryCell(posX+x, posY+y);
 			}
 		}
 		

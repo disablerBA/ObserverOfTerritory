@@ -3,16 +3,14 @@ package ObserverOfTerritory;
 import java.util.ArrayList;
 import java.util.Random;
 
-import ObserverOfTerritory.Robot.MoveDirection;
-
 public class CrazyAlgorithm implements IAlgorithm {
 
 	@Override
-	public void algorithm(Robot robot)
+	public void selectNextPosition(Robot robot)
 	{
 		Random ran = new Random();
-		CellTerritory ct[] = robot.lookAround();
-		ArrayList<CellTerritory> satisfyingCell = new ArrayList<CellTerritory>();
+		TerritoryCell ct[] = robot.lookAround();
+		ArrayList<TerritoryCell> satisfyingCell = new ArrayList<TerritoryCell>();
 		for (int i = 0; i<ct.length; i++)
 		{
 			if ( ct[i].getPriority() >= 0 && ct[i].getSaturation() != 1 )
@@ -21,7 +19,7 @@ public class CrazyAlgorithm implements IAlgorithm {
 			} 
 		}
 		
-		CellTerritory randomCell =  satisfyingCell.get( ran.nextInt(satisfyingCell.size()) );
-		robot.setPosition( robot.getTerritory().getPosXCellTerritory(randomCell) , robot.getTerritory().getPosYCellTerritory(randomCell));
+		TerritoryCell randomCell =  satisfyingCell.get( ran.nextInt(satisfyingCell.size()) );
+		robot.setPosition( robot.getTerritory().getPosXTerritoryCell(randomCell) , robot.getTerritory().getPosYTerritoryCell(randomCell));
 	}
 }

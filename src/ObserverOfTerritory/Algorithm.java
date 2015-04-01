@@ -3,18 +3,16 @@ package ObserverOfTerritory;
 import java.util.ArrayList;
 import java.util.Random;
 
-import ObserverOfTerritory.Robot.MoveDirection;
-
 public class Algorithm implements IAlgorithm {
 
 	@Override
-	public void algorithm(Robot rob)
+	public void selectNextPosition(Robot rob)
 	{
-		CellTerritory[] ct = rob.lookAround();
+		TerritoryCell[] ct = rob.lookAround();
 		int maxPriority;
 		double minSaturation;
 		Random ran = new Random();
-		ArrayList<CellTerritory> satisfyingCell = new ArrayList<CellTerritory>();
+		ArrayList<TerritoryCell> satisfyingCell = new ArrayList<TerritoryCell>();
 		minSaturation = 1;
 		for (int i = 0; i<ct.length; i++)
 		{
@@ -43,10 +41,13 @@ public class Algorithm implements IAlgorithm {
 		
 		for ( int i = 0; i < satisfyingCell.size(); i++ )
 		{
-			if ( satisfyingCell.get(i).getPriority() != maxPriority ) satisfyingCell.remove(i--);
+			if ( satisfyingCell.get(i).getPriority() != maxPriority )
+			{
+				satisfyingCell.remove(i--);
+			}
 		}		
 		
-		CellTerritory randomCell = satisfyingCell.get( ran.nextInt(satisfyingCell.size()) );
-		rob.setPosition( rob.getTerritory().getPosXCellTerritory( randomCell ), rob.getTerritory().getPosYCellTerritory( randomCell )  );
+		TerritoryCell randomCell = satisfyingCell.get( ran.nextInt(satisfyingCell.size()) );
+		rob.setPosition( rob.getTerritory().getPosXTerritoryCell( randomCell ), rob.getTerritory().getPosYTerritoryCell( randomCell )  );
 	}
 }

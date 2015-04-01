@@ -4,33 +4,82 @@ import java.util.Random;
 
 public class TestKit {
 	
+	private int durationTime;
 	private Robot[] robots;
 	private Territory territory;
-	private int[][] beginPosotionRobots;
+	//private int[][] beginPositionRobots;
 	private double kpiSolution1 = 0;
 	private double kpiSolution2 = 0;
 	private IAlgorithm algorithm1;
 	private IAlgorithm algorithm2;
+	private int[][][] coordinatesRobotsPerTime1;
+	private int[][][] coordinatesRobotsPerTime2;
 	/*private Robot[] beginRobots;
 	private Territory beginTerritory; */
 	
 	
 	//private [] stateTerritory;
 	
-	public TestKit(int countRobot, int sizeFieldX, int sizeFieldY)
+	public TestKit(int durTime, int countRobot, int sizeFieldX, int sizeFieldY)
+	{
+		durationTime = durTime;
+		createRobots(countRobot);
+		territory = new Territory(sizeFieldX, sizeFieldY);
+		joinRobotsToTerritory();
+		algorithm1 = new Algorithm();
+		algorithm2 = new CrazyAlgorithm();
+
+		coordinatesRobotsPerTime1 = new int[durTime][countRobot][2];
+		coordinatesRobotsPerTime2 = new int[durTime][countRobot][2];
+		//territory.setRobots(robots);
+		//saveBeginPositionRobots();
+	}
+	
+	private void createRobots( int countRobot )
 	{
 		robots = new Robot[countRobot];
 		for ( int i = 0; i < countRobot; i++ )
 		{
 			robots[i] = new Robot();
 		}
+	}
+	
+	private void joinRobotsToTerritory()
+	{
+		for ( int i = 0; i < robots.length; i++ )
+		{
+			robots[i].setTerritory(territory);
+		}
 		
-		territory = new Territory(sizeFieldX, sizeFieldY);
-		algorithm1 = new Algorithm();
-		algorithm2 = new CrazyAlgorithm();
+		generatePositionRobots();
+	}
+	
+	private void generatePositionRobots()
+	{
+		Random ran = new Random();
+		//ArrayList<Robot> robots = territory.getRobots();
+		for(Robot rob: robots)
+		{
+			rob.setPosition( ran.nextInt(territory.getSizeX()), ran.nextInt(territory.getSizeY())); 
+		}
 		
-		territory.setRobots(robots);
-		saveBeginPositionRobots();
+		for(int i = 0; i < robots.length; i++)
+		{
+			for(int j = 0; j < robots.length; j++)
+			{
+				if (i == j)
+				{
+					continue;
+				}
+				
+				if( (robots[i].getPosX() == robots[j].getPosX()) && (robots[i].getPosY() == robots[j].getPosY()) 
+					|| (territory.getTerritoryCell(robots[i].getPosX(), robots[i].getPosY()).getPriority() <= 0) )
+				{
+					robots[i].setPosition( ran.nextInt(territory.getSizeX()), ran.nextInt(territory.getSizeY()) );
+					j = 0;
+				}
+			}
+		}
 	}
 	
 	public void setAlgorithm1(IAlgorithm alg1)
@@ -57,60 +106,53 @@ public class TestKit {
 		}
 	}
 	
-	private void saveBeginPositionRobots()
+	/*private void saveBeginPositionRobots()
 	{
-		beginPosotionRobots = new int[robots.length][2];
+		beginPositionRobots = new int[robots.length][2];
 		for (int i = 0; i < robots.length; i++)
 		{
-			beginPosotionRobots[i][0] = robots[i].getPosX();
-			beginPosotionRobots[i][1] = robots[i].getPosY();
+			beginPositionRobots[i][0] = robots[i].getPosX();
+			beginPositionRobots[i][1] = robots[i].getPosY();
 		}
-	}
+	}*/
 	
 	private void setBeginPositionRobots()
 	{
 		for ( int i = 0; i< robots.length; i++)
 		{
-			robots[i].setPosition(beginPosotionRobots[i][0], beginPosotionRobots[i][1]);
+			robots[i].setPosition(coordinatesRobotsPerTime1[0][i][0], coordinatesRobotsPerTime1[0][i][1]);
 		}
 	}
 	
-	private void resetSaturationsTerritory()
-	{
-		for (int x =0; x < territory.getSizeX(); x++)
-		{
-			for (int y =0; y < territory.getSizeY(); y++)
-			{
-				territory.getCellTerritory(x, y).resetSaturation();
-			}
-		}
-	}
-	
-	public void startTest(int durationTime)
+	public void startTest()
 	{	
-		kpiSolution1 = computeKpiSolution(algorithm1, durationTime);
-		kpiSolution2 = computeKpiSolution(algorithm2, durationTime);
+		kpiSolution1 = computeKpiSolution(algorithm1, coordinatesRobotsPerTime1);
+		kpiSolution2 = computeKpiSolution(algorithm2, coordinatesRobotsPerTime2);
 		System.out.println("\nKPIрешения первого алгоритма: "+kpiSolution1
 							+"\nKPIрешения второго алгоритма: "+kpiSolution2);
 	}
 	
-	private double computeKpiSolution(IAlgorithm alg, int durationTime)
+	private double computeKpiSolution(IAlgorithm alg, int[][][] posRobs)
 	{
 		setAlgorithmForRobots(alg);
 		double kpiSolution = 0;
 		System.out.println(territory.getCountBarrier());
-		for( int time = 0; time <= durationTime; time++ )
+		for( int time = 0; time < durationTime; time++ )
 		{
 			System.out.println(time);
-			for( Robot r : robots )
+			for( int i = 0; i<robots.length; i++)
 			{
-				System.out.println("Позиция робота: "+r.getPosX()+" "+r.getPosY()+" Приоритет клетки: "+territory.getCellTerritory(r.getPosX(), r.getPosY()).getPriority());
-				if ( isHit() ) System.out.println("Роботы все таки встают на одну клетку");
-				territory.getCellTerritory(r.getPosX(), r.getPosY()).saturationSetMax();
+				System.out.println("Позиция робота: "+robots[i].getPosX()+" "+robots[i].getPosY()+" Приоритет клетки: "+territory.getTerritoryCell(robots[i].getPosX(), robots[i].getPosY()).getPriority());
+				if ( isHit() ) System.out.println("Роботы все таки встают на одну клетку :-(");
+				territory.getTerritoryCell(robots[i].getPosX(), robots[i].getPosY()).saturationSetMax();
 				//r.step();
+				//сохраняем позиции роботов
+				posRobs[time][i][0] = robots[i].getPosX();//posX
+				posRobs[time][i][1] = robots[i].getPosY();//posY
 			}
 			
-			territory.decrementSaturations();
+			
+			territory.decrementSaturations(robots);
 			double kpi = territory.computeKPIperTime();	//а может этот метод нужно описывать в testKit'е?
 			kpiSolution += kpi;
 			
@@ -118,15 +160,14 @@ public class TestKit {
 			
 			for( Robot r : robots )
 			{
-				
 				r.step();
 			}
 		}
 		
-		kpiSolution /= durationTime+1;
+		kpiSolution /= durationTime;
 		System.out.println("KPIрешения равен "+kpiSolution);
 		setBeginPositionRobots();
-		resetSaturationsTerritory();
+		territory.resetTerritorySaturations();
 		
 		return kpiSolution;
 	}
@@ -139,7 +180,10 @@ public class TestKit {
 			for ( int j = i+1; j < robots.length; j++ )
 			{
 				if ( robots[i].getPosX() == robots[j].getPosX() && robots[i].getPosY() == robots[j].getPosY() )
+				{
 					return true;
+				}
+					
 			}
 		}
 		return false;
