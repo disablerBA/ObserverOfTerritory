@@ -18,6 +18,7 @@ public class Robot	{
 	final public void step()
 	{
 		algorithm.selectNextPosition(this);
+		territory.getTerritoryCell(getPosX(), getPosY()).setSaturationMax();
 	}
 	
 	final public void setAlgorithm(IAlgorithm alg)

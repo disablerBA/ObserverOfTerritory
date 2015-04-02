@@ -35,7 +35,7 @@ public class Territory {
 	{
 		if ( (x < 0 || y <0) || (x>=getSizeX() || y>=getSizeY()) ) 
 		{
-			System.out.println("Запрашиваемый CellTerritory отсутствует");
+			//System.out.println("Запрашиваемый TerritoryCell отсутствует");
 			return new TerritoryCell(-2); // можно и -1
 		}
 		//System.out.println("Запрашиваемый CellTerritory найден");
@@ -83,11 +83,11 @@ public class Territory {
 	final public double computeKPIperTime()
 	{
 		double averageKPI = 0;
-		for (TerritoryCell[] arrayCT: territory)
+		for (TerritoryCell[] arrayTC: territory)
 		{
-			for (TerritoryCell ct: arrayCT)
+			for (TerritoryCell tc: arrayTC)
 			{
-				averageKPI += ct.getSaturation();
+				averageKPI += tc.getSaturation();
 			}
 		}
 		
@@ -141,7 +141,7 @@ public class Territory {
 				territory[x][y] = new TerritoryCell(rand.nextInt(5)-1);
 				if (territory[x][y].getPriority() == 0 || territory[x][y].getPriority() == -1)
 				{
-					territory[x][y].saturationSetMax();
+					territory[x][y].setSaturationMax();
 				}
 					
 			}

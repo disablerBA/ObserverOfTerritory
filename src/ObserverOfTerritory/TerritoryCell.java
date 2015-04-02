@@ -47,7 +47,7 @@ public class TerritoryCell {
 	}
 
 	/** устанавливает удовлетворенность квадрата территории в максимальное значение */
-	final public void saturationSetMax()	// 
+	final public void setSaturationMax()	// 
 	{
 		this.saturation = 1;
 	}
