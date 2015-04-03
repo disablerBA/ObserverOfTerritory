@@ -78,7 +78,7 @@ public class TestKit {
 					|| (territory.getTerritoryCell(robots[i].getPosX(), robots[i].getPosY()).getPriority() <= 0) )
 				{
 					robots[i].setPosition( ran.nextInt(territory.getSizeX()), ran.nextInt(territory.getSizeY()) );
-					j = 0;
+					j = -1;
 				}
 			}
 		}
