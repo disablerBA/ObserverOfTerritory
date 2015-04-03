@@ -4,7 +4,8 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class CrazyAlgorithm implements IAlgorithm {
-
+	
+	/** выбирает для робота следующую позицию случайным образом */
 	@Override
 	public void selectNextPosition(Robot robot)
 	{

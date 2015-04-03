@@ -2,37 +2,34 @@ package ObserverOfTerritory;
 
 public class Robot	{
 
-	private int posX, posY;
-	private Territory territory;
-	private IAlgorithm algorithm;
+	private int posX, posY; // координаты робота
+	private Territory territory; // территория, на которую "поставили" робота
+	private IAlgorithm algorithm; // алгоритм, используемый роботом для выбора следующей позиции
 	
 	public enum MoveDirection {
 		Up, Up_Right, Right, Right_Down, Down, Down_Left, Left, Left_Up
 	};
 	
-	public Robot()
-	{
-		
-	}
-	
+	/** робот шагает на следующую клетку, выбранную в соответствии с алгоритмом */
 	final public void step()
 	{
 		algorithm.selectNextPosition(this);
 		territory.getTerritoryCell(getPosX(), getPosY()).setSaturationMax();
 	}
 	
+	/** назначает роботу алгоритм */
 	final public void setAlgorithm(IAlgorithm alg)
 	{
 		algorithm = alg;
 	}
 	
+	/** возвращает территорию, на которой находится робот */
 	final public Territory getTerritory()
 	{
 		return territory;
 	}
 	
-	
-	
+	/** назначает территорию для робота */
 	final public void setTerritory(Territory ter)
 	{
 		this.territory = ter;
@@ -40,6 +37,7 @@ public class Robot	{
 		//generatePositionRobots();
 	}
 	
+	/** робот осматривает клетки вокруг себя(8 штук) */
 	public TerritoryCell[] lookAround()
 	{
 		TerritoryCell[] ct = new TerritoryCell[8];
@@ -60,22 +58,26 @@ public class Robot	{
 		return ct;
 	}
 	
+	/** возвращает координату робота по Х */
 	final public int getPosX()
 	{
 		return posX;
 	}
 	
+	/** возвращает координату робота по У */
 	final public int getPosY()
 	{
 		return posY;
 	}
 	
+	/** устанавливает координаты */
 	final public void setPosition(int x, int y)
 	{
 		posX = x;
 		posY = y;
 	}
 	
+	/** двигает робота по одному из 8 направлений на 1 клетку */
 	final public void move(MoveDirection direct)
 	{
 		switch (direct)

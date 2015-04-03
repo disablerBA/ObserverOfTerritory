@@ -5,21 +5,16 @@ import java.util.Random;
 public class Territory {
 
 	//private int[] [][] property ;
-	private TerritoryCell[][] territory;
+	private TerritoryCell[][] territory;	// массив клеток территории
 	//private ArrayList<Robot> robots;
 	
 	public Territory(int x, int y)
 	{
-		//robots = new ArrayList<Robot>();
 		territory = new TerritoryCell[x][y];
 		generatePriority();
 	}
 	
-	/*final public ArrayList<Robot> getRobots()
-	{
-		return robots;
-	}*/
-	
+	/** сбрасывает значения удовлетворенности клеток с приоритетом больше 0 */
 	public void resetTerritorySaturations()
 	{
 		for (int x =0; x < getSizeX(); x++)
@@ -31,6 +26,7 @@ public class Territory {
 		}
 	}
 	
+	/** возвращает клетку территории с координатами х,у */
 	final public TerritoryCell getTerritoryCell(int x,int y)
 	{
 		if ( (x < 0 || y <0) || (x>=getSizeX() || y>=getSizeY()) ) 
@@ -43,11 +39,13 @@ public class Territory {
 		return territory[x][y];
 	}
 	
+	/** возвращает массив всех клеток */
 	final public TerritoryCell[][] getTerritoryCell()
 	{
 		return territory;
 	}
 	
+	/** возвращает координату х указанной клетки */
 	final public int getPosXTerritoryCell(TerritoryCell cellTerritory)
 	{
 		for ( int j = 0; j<getSizeY(); j++)
@@ -64,6 +62,7 @@ public class Territory {
 		return -1;
 	}
 	
+	/** возвращает координату у указанной клетки */
 	final public int getPosYTerritoryCell(TerritoryCell cellTerritory)
 	{
 		for ( int j = 0; j<getSizeY(); j++)
@@ -80,6 +79,7 @@ public class Territory {
 		return -1;
 	}
 	
+	/** возвращает среднее значение KPI в момент времени */
 	final public double computeKPIperTime()
 	{
 		double averageKPI = 0;
@@ -121,16 +121,19 @@ public class Territory {
 		
 	}*/
 	
+	/** возвращает размер территории по х */
 	final public int getSizeX()
 	{
 		return territory.length; 
 	}
 	
+	/** возвращает размер территории по у */
 	final public int getSizeY()
 	{
 		return territory[0].length;
 	}
 	
+	/** задает случайный приоритет для всех клеток территории */
 	private void generatePriority()
 	{
 		Random rand = new Random();
@@ -148,17 +151,8 @@ public class Territory {
 		}
 	}
 	
-	final public void copyTerritory(Territory ter)
-	{
-		for ( int x=0; x<ter.getSizeX(); x++ )
-		{
-			for ( int y=0; y<ter.getSizeY(); y++ )
-			{
-				territory[x][y] = new TerritoryCell(ter.getTerritoryCell(x, y).getPriority());
-			}
-		}
-	}
-	
+	/** уменьшает значение удовлетворенности всех клеток территории, кроме клеток с приоритетом <=0
+	 *  и тех, на которых стоят роботы */
 	final public void decrementSaturations(Robot [] robots)	//а может этот метод нужно описывать в testKit'е?
 	{// возможно тут ошибка с координатами
 		for (int x=0; x < territory.length; x++)
@@ -175,6 +169,7 @@ public class Territory {
 		}
 	}
 	
+	/** возвращает количество клеток с приоритемом <=0 */
 	public int getCountBarrier()
 	{
 		int count = 0;
@@ -191,6 +186,7 @@ public class Territory {
 		return count;
 	}
 	
+	/** возвращает true, если на клетке с координатами х,у стоит робот или false в противном случае */
 	private boolean isHitPosition(int x, int y, Robot [] robots)
 	{
 		for (Robot robot: robots)

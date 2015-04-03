@@ -4,24 +4,20 @@ import java.util.InputMismatchException;
 import java.util.Random;
 import java.util.Scanner;
 
+/** среда тестирования */
 public class TestKit {
 	
-	private int durationTime;
-	private Robot[] robots;
-	private Territory territory;
-	//private int[][] beginPositionRobots;
-	private double kpiSolution1 = 0;
-	private double kpiSolution2 = 0;
-	private IAlgorithm algorithm1;
-	private IAlgorithm algorithm2;
-	private int[][][] coordinatesRobotsPerTime1;
-	private int[][][] coordinatesRobotsPerTime2;
-	/*private Robot[] beginRobots;
-	private Territory beginTerritory; */
+	private int durationTime;	// продолжительность теста
+	private Robot[] robots;		// массив роботов
+	private Territory territory;	// территория
+	private double kpiSolution1 = 0;	// KPIрешения для 1-го алгоритма
+	private double kpiSolution2 = 0;	// KPIрешения для 2-го алгоритма
+	private IAlgorithm algorithm1;	// 1-й тестируемый алгоритм
+	private IAlgorithm algorithm2;	// 2-й тестируемый алгоритм
+	private int[][][] coordinatesRobotsPerTime1;	// массив, хранящий координаты роботов в каждый момент времени после тестирования 1-го алгоритма
+	private int[][][] coordinatesRobotsPerTime2;	// массив, хранящий координаты роботов в каждый момент времени после тестирования 2-го алгоритма
 	
-	
-	//private [] stateTerritory;
-	
+	/** конструктор */
 	public TestKit(int durTime, int countRobot, int sizeFieldX, int sizeFieldY)
 	{
 		durationTime = durTime;
@@ -37,6 +33,7 @@ public class TestKit {
 		//saveBeginPositionRobots();
 	}
 	
+	/** создает указанное количество роботов */
 	private void createRobots( int countRobot )
 	{
 		robots = new Robot[countRobot];
@@ -46,6 +43,7 @@ public class TestKit {
 		}
 	}
 	
+	/** задает роботам территорию */
 	private void joinRobotsToTerritory()
 	{
 		for ( int i = 0; i < robots.length; i++ )
@@ -56,55 +54,63 @@ public class TestKit {
 		generatePositionRobots();
 	}
 	
+	/** генерирует начальные позиции роботов случайным образом */
 	private void generatePositionRobots()
 	{
 		Random ran = new Random();
-		//ArrayList<Robot> robots = territory.getRobots();
+		//  выбираем для роботов случайные позиции
 		for(Robot rob: robots)
 		{
 			rob.setPosition( ran.nextInt(territory.getSizeX()), ran.nextInt(territory.getSizeY())); 
 		}
 		
+		// сравниваем позиции всех роботов между собой
 		for(int i = 0; i < robots.length; i++)
 		{
 			for(int j = 0; j < robots.length; j++)
 			{
+				// не сравниваем с самим собой
 				if (i == j)
 				{
 					continue;
 				}
 				
+				// если позиции роботов совпали или робота поставили на препятствие, 
+				// то выбрать новую позицию и снова сравнить ее с другими роботами
 				if( (robots[i].getPosX() == robots[j].getPosX()) && (robots[i].getPosY() == robots[j].getPosY()) 
 					|| (territory.getTerritoryCell(robots[i].getPosX(), robots[i].getPosY()).getPriority() <= 0) )
 				{
 					robots[i].setPosition( ran.nextInt(territory.getSizeX()), ran.nextInt(territory.getSizeY()) );
-					j = -1;
+					j = -1; // для сравнения новой позиции со всеми другими роботами
 				}
 			}
 		}
 		
+		// для клеток, на которые поставили роботов, установить удовлетворенность = 1
 		for(int i = 0; i < robots.length; i++)
 		{
 			territory.getTerritoryCell(robots[i].getPosX(), robots[i].getPosY()).setSaturationMax();
 		}
 	}
 	
-	public void setAlgorithm1(IAlgorithm alg1)
+	/**  */
+	public void changeAlgorithm1(IAlgorithm alg1)
 	{
 		this.algorithm1 = alg1;
 	}
 	
-	public void setAlgorithm2(IAlgorithm alg2)
+	public void changeAlgorithm2(IAlgorithm alg2)
 	{
 		this.algorithm2 = alg2;
 	}
 	
-	public void setAlgorithms(IAlgorithm alg1, IAlgorithm alg2)
+	public void changeAlgorithms(IAlgorithm alg1, IAlgorithm alg2)
 	{
 		this.algorithm1 = alg1;
 		this.algorithm2 = alg2;
 	}
 	
+	/** устанавливает всем роботам алгоритм */
 	private void setAlgorithmForRobots(IAlgorithm alg)
 	{
 		for ( Robot rob: robots )
@@ -113,16 +119,7 @@ public class TestKit {
 		}
 	}
 	
-	/*private void saveBeginPositionRobots()
-	{
-		beginPositionRobots = new int[robots.length][2];
-		for (int i = 0; i < robots.length; i++)
-		{
-			beginPositionRobots[i][0] = robots[i].getPosX();
-			beginPositionRobots[i][1] = robots[i].getPosY();
-		}
-	}*/
-	
+	/** стаавит роботов в исходные позиции */
 	private void setBeginPositionRobots()
 	{
 		for ( int i = 0; i< robots.length; i++)
@@ -132,15 +129,19 @@ public class TestKit {
 		}
 	}
 	
+	/** проводит тест алгоритмов */
 	public void startTest()
 	{	
 		kpiSolution1 = computeKpiSolution(durationTime, algorithm1, coordinatesRobotsPerTime1);
 		kpiSolution2 = computeKpiSolution(durationTime, algorithm2, coordinatesRobotsPerTime2);
 		System.out.println("KPIрешения первого алгоритма: "+kpiSolution1
 							+"\nKPIрешения второго алгоритма: "+kpiSolution2+"\n");
+		System.out.println("Разность KPIрешений алгоритмов: "+(kpiSolution1 - kpiSolution2)
+							+"\nПроцентное соотношение 1-го алгоритма ко 2-му: "+kpiSolution1/kpiSolution2*100);
 		reviewSaturationMatrix();
 	}
 	
+	/** возвращает KPIрешения для заданного алгоритма с заданной длительностью */
 	private double computeKpiSolution(int duration, IAlgorithm alg, int[][][] posRobs)
 	{
 		setAlgorithmForRobots(alg);
@@ -149,10 +150,10 @@ public class TestKit {
 		System.out.println(territory.getCountBarrier());
 		for( int time = 0; time < duration; time++ )
 		{
-			System.out.println(time);
+			//System.out.println(time);
 			for( int i = 0; i<robots.length; i++)
 			{
-				System.out.println("Позиция робота: "+robots[i].getPosX()+" "+robots[i].getPosY()+" Приоритет клетки: "+territory.getTerritoryCell(robots[i].getPosX(), robots[i].getPosY()).getPriority());
+				//System.out.println("Позиция робота: "+robots[i].getPosX()+" "+robots[i].getPosY()+" Приоритет клетки: "+territory.getTerritoryCell(robots[i].getPosX(), robots[i].getPosY()).getPriority());
 				if ( isHit() ) System.out.println("Роботы все таки встают на одну клетку :-(");
 				//territory.getTerritoryCell(robots[i].getPosX(), robots[i].getPosY()).setSaturationMax();
 				//r.step();
@@ -175,7 +176,7 @@ public class TestKit {
 					robots[i].step();
 				}
 			}
-			System.out.println("KPIсреза в момент времени "+time+" равен: "+kpi);
+			//System.out.println("KPIсреза в момент времени "+time+" равен: "+kpi);
 		}
 		
 		kpiSolution /= duration;
@@ -188,6 +189,7 @@ public class TestKit {
 		return kpiSolution;
 	}
 	
+	/** отображает KPIсреза в заданный момент времени, а также выводит матрицу удовлетворенности */
 	private void computeKpiSolution( int duration, int[][][] posRobs)
 	{
 		double kpi = 0;
@@ -195,17 +197,21 @@ public class TestKit {
 		
 		for( int time = 0; time <= duration; time++ )
 		{
-			System.out.println(time);
+			//System.out.println(time);
 			for( int i = 0; i<robots.length; i++)
 			{
-				System.out.println("Позиция робота: "+robots[i].getPosX()+" "+robots[i].getPosY()+" Приоритет клетки: "+territory.getTerritoryCell(robots[i].getPosX(), robots[i].getPosY()).getPriority());
+				//System.out.println("Позиция робота: "+robots[i].getPosX()+" "+robots[i].getPosY()+" Приоритет клетки: "+territory.getTerritoryCell(robots[i].getPosX(), robots[i].getPosY()).getPriority());
 				if ( isHit() ) System.out.println("Роботы все таки встают на одну клетку :-(");
 				//territory.getTerritoryCell(robots[i].getPosX(), robots[i].getPosY()).setSaturationMax();
 			}
 			
 			
 			territory.decrementSaturations(robots);
-			outputSaturationsMatrix();
+			if ( time == duration)
+			{
+				outputSaturationsMatrix();				
+			}
+			
 			kpi = territory.computeKPIperTime();
 			
 			if ( time+1 < durationTime )
@@ -216,16 +222,17 @@ public class TestKit {
 					territory.getTerritoryCell(robots[i].getPosX(), robots[i].getPosY()).setSaturationMax();
 				}
 			}
-			System.out.println("KPIсреза в момент времени "+time+" равен: "+kpi);
+			//System.out.println("KPIсреза в момент времени "+time+" равен: "+kpi);
 		}
 		
-		//System.out.println("KPIсреза в момент времени "+duration+" равен:"+kpi);
+		System.out.println("KPIсреза в момент времени "+duration+" равен:"+kpi);
 		
 		//outputSaturationsMatrix();
 		territory.resetTerritorySaturations();
 		setBeginPositionRobots();
 	}
 	
+	/** выводит матрицу удовлетворенности */
 	private void outputSaturationsMatrix()
 	{
 		for ( int y =0; y < territory.getSizeY(); y++)
@@ -240,7 +247,8 @@ public class TestKit {
 		System.out.println();
 	}
 	
-	public void reviewSaturationMatrix()
+	/** обеспечивает диалог */
+	private void reviewSaturationMatrix()
 	{
 		Scanner scanner = new Scanner(System.in);
 		int time;
@@ -248,8 +256,13 @@ public class TestKit {
 		{
 			try
 			{
+				System.out.println("\nВведите момент времени в диапазоне 0-"+(durationTime-1));
 				time = scanner.nextInt();
-				
+				if ( time < 0 || time >= durationTime )
+				{
+					System.out.println("Недопустимое значение");
+					continue;
+				}
 			}  catch ( InputMismatchException e )
 			{
 				break;
@@ -265,6 +278,7 @@ public class TestKit {
 		scanner.close();
 	}
 	
+	/** возвращает true, если тест уже был пройден или false в противном случае(не используется) */
 	private boolean isAlready( int[][][] posRobs, int time)
 	{
 		if ( posRobs[time][0][0] == 0 && posRobs[time][0][1] == 0 && posRobs[time][1][0] == 0 && posRobs[time][1][1] == 0 )
@@ -276,9 +290,9 @@ public class TestKit {
 		}//?		
 	}
 	
+	/** возвращает true, если роботы все-таки встали на одну клетку или false в противном случае */
 	private boolean isHit()
 	{
-		
 		for ( int i = 0; i < robots.length-1; i++ )
 		{
 			for ( int j = i+1; j < robots.length; j++ )
@@ -286,8 +300,7 @@ public class TestKit {
 				if ( robots[i].getPosX() == robots[j].getPosX() && robots[i].getPosY() == robots[j].getPosY() )
 				{
 					return true;
-				}
-					
+				}				
 			}
 		}
 		return false;
