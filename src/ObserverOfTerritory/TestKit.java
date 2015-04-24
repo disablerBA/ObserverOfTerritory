@@ -3,11 +3,20 @@ package ObserverOfTerritory;
 import java.util.InputMismatchException;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
 
 /** среда тестирования */
 public class TestKit {
-	
-	private int durationTime;	// продолжительность теста
+
+	public volatile boolean isPause = true;
+	private int multipleAcceleration = 1;
+	private Thread thread;
+	private int time = 0; 
+	private volatile int durationTime;	// продолжительность теста
 	private Robot[] robots;		// массив роботов
 	private Territory territory;	// территория
 	private double kpiSolution1 = 0;	// KPIрешения для 1-го алгоритма
@@ -16,6 +25,7 @@ public class TestKit {
 	private IAlgorithm algorithm2;	// 2-й тестируемый алгоритм
 	private int[][][] coordinatesRobotsPerTime1;	// массив, хранящий координаты роботов в каждый момент времени после тестирования 1-го алгоритма
 	private int[][][] coordinatesRobotsPerTime2;	// массив, хранящий координаты роботов в каждый момент времени после тестирования 2-го алгоритма
+	private EventListener listener; 
 	
 	/** конструктор */
 	public TestKit(int durTime, int countRobot, int sizeFieldX, int sizeFieldY)
@@ -31,6 +41,7 @@ public class TestKit {
 		coordinatesRobotsPerTime2 = new int[durTime][countRobot][2];
 		//territory.setRobots(robots);
 		//saveBeginPositionRobots();
+		setAlgorithmForRobots(algorithm1);
 	}
 	
 	/** создает указанное количество роботов */
@@ -89,7 +100,8 @@ public class TestKit {
 		// для клеток, на которые поставили роботов, установить удовлетворенность = 1
 		for(int i = 0; i < robots.length; i++)
 		{
-			territory.getTerritoryCell(robots[i].getPosX(), robots[i].getPosY()).setSaturationMax();
+			//territory.getTerritoryCell(robots[i].getPosX(), robots[i].getPosY()).setSaturationMax();
+			territory.setSaturationMax(robots[i].getPosX(), robots[i].getPosY());
 		}
 	}
 	
@@ -125,7 +137,8 @@ public class TestKit {
 		for ( int i = 0; i< robots.length; i++)
 		{
 			robots[i].setPosition(coordinatesRobotsPerTime1[0][i][0], coordinatesRobotsPerTime1[0][i][1]);
-			robots[i].getTerritory().getTerritoryCell(robots[i].getPosX(), robots[i].getPosY()).setSaturationMax();
+			//robots[i].getTerritory().getTerritoryCell(robots[i].getPosX(), robots[i].getPosY()).setSaturationMax();
+			territory.setSaturationMax(robots[i].getPosX(), robots[i].getPosY());
 		}
 	}
 	
@@ -164,11 +177,12 @@ public class TestKit {
 			
 			
 			territory.decrementSaturations(robots);
+			territory.paint(robots);
 			kpi = territory.computeKPIperTime();	//а может этот метод нужно описывать в testKit'е?
 			kpiSolution += kpi;
 			
 			
-			
+
 			if ( time+1 != duration )
 			{
 				for( int i =0; i<robots.length; i++ )
@@ -176,7 +190,11 @@ public class TestKit {
 					robots[i].step();
 				}
 			}
+
+			
 			//System.out.println("KPIсреза в момент времени "+time+" равен: "+kpi);
+			
+			
 		}
 		
 		kpiSolution /= duration;
@@ -219,7 +237,8 @@ public class TestKit {
 				for( int i =0; i<robots.length; i++ )
 				{
 					robots[i].setPosition(posRobs[time+1][i][0], posRobs[time+1][i][1]);
-					territory.getTerritoryCell(robots[i].getPosX(), robots[i].getPosY()).setSaturationMax();
+					//territory.getTerritoryCell(robots[i].getPosX(), robots[i].getPosY()).setSaturationMax();
+					territory.setSaturationMax(robots[i].getPosX(), robots[i].getPosY());
 				}
 			}
 			//System.out.println("KPIсреза в момент времени "+time+" равен: "+kpi);
@@ -269,7 +288,7 @@ public class TestKit {
 			}
 			
 			computeKpiSolution(time, coordinatesRobotsPerTime1);
-			//computeKpiSolution(time, algorithm2, coordinatesRobotsPerTime2);
+			computeKpiSolution(time, coordinatesRobotsPerTime2);
 			for (int i = 0; i< robots.length; i++)
 			{
 				System.out.println("Робот "+i+" имеет координаты "+coordinatesRobotsPerTime1[time][i][0]+" "+coordinatesRobotsPerTime1[time][i][1]);
@@ -304,5 +323,133 @@ public class TestKit {
 			}
 		}
 		return false;
+	}
+	
+	public Territory getTerritory()
+	{
+		return territory;
+	}
+	
+	public Robot[] getRobots()
+	{
+		return robots;
+	}
+	
+	public void step() throws InterruptedException
+	{
+		//notify();
+
+		if ( time < durationTime )
+		{
+			for( int i = 0; i<robots.length; i++)
+			{
+				//System.out.println("Позиция робота: "+robots[i].getPosX()+" "+robots[i].getPosY()+" Приоритет клетки: "+territory.getTerritoryCell(robots[i].getPosX(), robots[i].getPosY()).getPriority());
+				if ( isHit() ) System.out.println("Роботы все таки встают на одну клетку :-(");
+				//territory.getTerritoryCell(robots[i].getPosX(), robots[i].getPosY()).setSaturationMax();
+				//r.step();
+				//сохраняем позиции роботов
+				coordinatesRobotsPerTime1[time][i][0] = robots[i].getPosX();//posX
+				coordinatesRobotsPerTime1[time][i][1] = robots[i].getPosY();//posY
+			}
+			
+			
+			//territory.decrementSaturations(robots);
+			//territory.paint(robots);
+		
+			
+		
+			for( int i =0; i<robots.length; i++ )
+			{
+				robots[i].step();
+			}
+			
+			time++;
+			//territory.paint(robots);
+			territory.decrementSaturations(robots);
+			listener.onTimeChange();
+			System.out.println("Время: "+time);
+		}
+			//wait();
+	}
+	
+	synchronized public void play() 
+	{
+		
+		thread = new Thread(new Runnable()
+		{
+			synchronized public void run()
+			{
+
+				
+				while (time < durationTime)
+				{
+					
+					try 
+					{
+						
+						while ( isPause )
+						{
+							//System.out.println("111111");
+							Thread.sleep(3000); //wait();
+							//System.out.println("222222");
+						}
+						//System.out.println("asdasd");
+						step();
+						Thread.sleep(1000/multipleAcceleration);
+					} catch (InterruptedException e) 
+					{
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				
+			}
+		});
+		//thread.setDaemon(false);
+		thread.setName("Моделирование");
+		thread.start();
+
+	}
+	
+	public Thread getThread()
+	{
+		return thread;
+	}
+	
+	public int getTime()
+	{
+		return time;
+	}
+	
+	public int getDuration()
+	{
+		return durationTime;
+	}
+	
+	public void addListener(EventListener listen)
+	{
+		listener = listen;
+	}
+	
+	public void setMultipleAcceleration(int num)
+	{
+		multipleAcceleration = num;
+	}
+	
+	public void changeSaturationMax(int num)
+	{
+		territory.changeSaturationMax(num);
+	}
+	
+	public void changeTimeDuration(int num)
+	{
+		durationTime = num;
+		coordinatesRobotsPerTime1 = new int[num][robots.length][2];
+		coordinatesRobotsPerTime2 = new int[num][robots.length][2];
+	}
+	
+	public int getSaturationMax()
+	{
+		return territory.getSaturationMax();
 	}
 }

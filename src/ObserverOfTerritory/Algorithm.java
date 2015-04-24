@@ -17,7 +17,7 @@ public class Algorithm implements IAlgorithm {
 		double minSaturation;
 		Random ran = new Random();
 		ArrayList<TerritoryCell> satisfyingCell = new ArrayList<TerritoryCell>();
-		minSaturation = 1;
+		minSaturation = Integer.MAX_VALUE;
 		for (int i = 0; i<ct.length; i++)
 		{
 			if ( ct[i].getPriority() > -2 && minSaturation > ct[i].getSaturation() )

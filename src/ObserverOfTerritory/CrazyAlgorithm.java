@@ -14,7 +14,7 @@ public class CrazyAlgorithm implements IAlgorithm {
 		ArrayList<TerritoryCell> satisfyingCell = new ArrayList<TerritoryCell>();
 		for (int i = 0; i<ct.length; i++)
 		{
-			if ( ct[i].getPriority() >= 0 && ct[i].getSaturation() != 1 )
+			if ( ct[i].getPriority() >= 0 )
 			{	
 				satisfyingCell.add(ct[i]);
 			} 

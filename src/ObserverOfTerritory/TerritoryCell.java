@@ -4,7 +4,8 @@ public class TerritoryCell {
 	
 	private int priority;	// приоритет клетки
 	private double saturation = 0, rateDecrement = 0.03;	// удовлетворенность клетки и коэффициент
-															// снижения удовлетворенности соответственно	
+															// снижения удовлетворенности соответственно
+	
 	/** конструктор */
 	public TerritoryCell(int priority)
 	{
@@ -49,10 +50,9 @@ public class TerritoryCell {
 			this.saturation = 0;
 		}
 	}
-
-	/** устанавливает удовлетворенность клетки территории в максимальное значение */
-	final public void setSaturationMax()	// 
+	
+	public void setSaturation(int sat)
 	{
-		this.saturation = 1;
+		this.saturation = sat;
 	}
 }

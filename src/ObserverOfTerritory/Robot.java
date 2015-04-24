@@ -14,7 +14,8 @@ public class Robot	{
 	final public void step()
 	{
 		algorithm.selectNextPosition(this);
-		territory.getTerritoryCell(getPosX(), getPosY()).setSaturationMax();
+		//territory.getTerritoryCell(getPosX(), getPosY()).setSaturationMax();
+		territory.setSaturationMax(getPosX(), getPosY());
 	}
 	
 	/** назначает роботу алгоритм */
