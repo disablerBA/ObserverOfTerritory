@@ -6,7 +6,7 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
-public class Territory extends Canvas {
+public class Territory {
 
 	//private int[] [][] property ;
 	private TerritoryCell[][] territory;	// массив клеток территории
@@ -17,8 +17,6 @@ public class Territory extends Canvas {
 	
 	public Territory(int x, int y)
 	{
-		super(10*x, 10*y);
-		gc = getGraphicsContext2D();
 		territory = new TerritoryCell[x][y];
 		generatePriority();
 	}
@@ -41,7 +39,7 @@ public class Territory extends Canvas {
 		if ( (x < 0 || y <0) || (x>=getSizeX() || y>=getSizeY()) ) 
 		{
 			//System.out.println("Запрашиваемый TerritoryCell отсутствует");
-			return new TerritoryCell(-2); // можно и -1
+			return new TerritoryCell(-1); //
 		}
 		//System.out.println("Запрашиваемый CellTerritory найден");
 		//System.out.println("x= "+x+" y=" +y);
@@ -123,7 +121,7 @@ public class Territory extends Canvas {
 		{
 			for( int y = 0; y<territory[x].length; y++ )
 			{
-				territory[x][y] = new TerritoryCell(rand.nextInt(4));
+				territory[x][y] = new TerritoryCell(rand.nextInt(5)-1);
 				if (territory[x][y].getPriority() == 0 || territory[x][y].getPriority() == -1)
 				{
 					setSaturationMax(x,y);
@@ -145,10 +143,10 @@ public class Territory extends Canvas {
 				if ( !isHitPosition(x, y, robots) ) 
 				{
 					territory[x][y].decrementSaturation();
-					paintCell(x,y);
+					//paintCell(x,y);
 				} else
 				{
-					paintRobot(x,y);
+					//paintRobot(x,y);
 				}
 				
 			}

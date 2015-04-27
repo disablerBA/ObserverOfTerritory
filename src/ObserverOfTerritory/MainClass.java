@@ -29,6 +29,7 @@ public class MainClass extends Application implements EventListener {
 	private Button multipleX1button;
 	private Button multipleX3button;
 	private Button multipleX10button;
+	private Viewer viewer;
 	private TestKit tk;
 	
 	public static void main(String[] args) {
@@ -40,7 +41,7 @@ public class MainClass extends Application implements EventListener {
 	
 	public void start(Stage stage)
 	{		
-		tk = new TestKit(100, 5, 50, 50);
+		tk = new TestKit(1000, 100, 50, 50);
 		tk.addListener(this);
 		
 		stage.setTitle("Среда тестирования");
@@ -49,10 +50,10 @@ public class MainClass extends Application implements EventListener {
 		
 		//полотно
 		ScrollPane scrollPane = new ScrollPane();
-		Territory ter = tk.getTerritory();
-		ter.paint(tk.getRobots());
-		scrollPane.setContent(ter);
-		scrollPane.setPannable(true);
+		viewer = new Viewer(50, 50);
+		viewer.paint(tk.getRobots());
+		scrollPane.setContent(viewer);
+		//scrollPane.setPannable(true);
 		
 		//вкладки
 		TabPane tabPane = new TabPane();
@@ -90,6 +91,7 @@ public class MainClass extends Application implements EventListener {
 		
 		
 		TextField coeffField = new TextField(String.valueOf(0.03));
+		coeffField.setEditable(false);
 		
 		paneTextField.getChildren().addAll(satMaxField, stepsField, coeffField);
 		paneData.getChildren().addAll(paneLabel, paneTextField);
@@ -134,7 +136,7 @@ public class MainClass extends Application implements EventListener {
 		forwardButton.setOnAction(new EventHandler<ActionEvent>() {
 			
 			@Override
-			synchronized public void handle(ActionEvent event) {
+			public void handle(ActionEvent event) {
 				// TODO Auto-generated method stub
 				
 				try {
@@ -151,14 +153,18 @@ public class MainClass extends Application implements EventListener {
 		playButton.setOnAction(new EventHandler<ActionEvent>() {
 			
 			@Override
-			synchronized public void handle(ActionEvent event) {
+			public void handle(ActionEvent event) {
 				// TODO Auto-generated method stub
 				if ( playButton.getText().equals("Старт"))
 				{
 					playButton.setText("Пауза");
 					System.out.println("Будим поток");
 					tk.isPause = false;
-					notify();
+					synchronized(tk)
+					{
+						tk.notifyAll();
+					}
+					
 					
 				} else
 				{
@@ -198,7 +204,7 @@ public class MainClass extends Application implements EventListener {
 		//установка детей для корня
 		rootNode.getChildren().addAll(scrollPane, tabPane);
 		
-		Scene scene = new Scene(rootNode, 700, 700);
+		Scene scene = new Scene(rootNode, 760, 550);
 		stage.setScene(scene);
 		
 		
@@ -215,6 +221,8 @@ public class MainClass extends Application implements EventListener {
 			public void run()
 			{
 				stepsLabel2.setText("Шаг "+tk.getTime()+" из "+tk.getDuration());
+				viewer.paint(tk.getRobots());
+				//Platform.exit();
 			}
 		});		
 	}

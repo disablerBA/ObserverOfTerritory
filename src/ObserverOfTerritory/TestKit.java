@@ -142,160 +142,6 @@ public class TestKit {
 		}
 	}
 	
-	/** проводит тест алгоритмов */
-	public void startTest()
-	{	
-		kpiSolution1 = computeKpiSolution(durationTime, algorithm1, coordinatesRobotsPerTime1);
-		kpiSolution2 = computeKpiSolution(durationTime, algorithm2, coordinatesRobotsPerTime2);
-		System.out.println("KPIрешения первого алгоритма: "+kpiSolution1
-							+"\nKPIрешения второго алгоритма: "+kpiSolution2+"\n");
-		System.out.println("Разность KPIрешений алгоритмов: "+(kpiSolution1 - kpiSolution2)
-							+"\nПроцентное соотношение 1-го алгоритма ко 2-му: "+kpiSolution1/kpiSolution2*100);
-		reviewSaturationMatrix();
-	}
-	
-	/** возвращает KPIрешения для заданного алгоритма с заданной длительностью */
-	private double computeKpiSolution(int duration, IAlgorithm alg, int[][][] posRobs)
-	{
-		setAlgorithmForRobots(alg);
-		double kpiSolution = 0;
-		double kpi = 0;
-		System.out.println(territory.getCountBarrier());
-		for( int time = 0; time < duration; time++ )
-		{
-			//System.out.println(time);
-			for( int i = 0; i<robots.length; i++)
-			{
-				//System.out.println("Позиция робота: "+robots[i].getPosX()+" "+robots[i].getPosY()+" Приоритет клетки: "+territory.getTerritoryCell(robots[i].getPosX(), robots[i].getPosY()).getPriority());
-				if ( isHit() ) System.out.println("Роботы все таки встают на одну клетку :-(");
-				//territory.getTerritoryCell(robots[i].getPosX(), robots[i].getPosY()).setSaturationMax();
-				//r.step();
-				//сохраняем позиции роботов
-				posRobs[time][i][0] = robots[i].getPosX();//posX
-				posRobs[time][i][1] = robots[i].getPosY();//posY
-			}
-			
-			
-			territory.decrementSaturations(robots);
-			territory.paint(robots);
-			kpi = territory.computeKPIperTime();	//а может этот метод нужно описывать в testKit'е?
-			kpiSolution += kpi;
-			
-			
-
-			if ( time+1 != duration )
-			{
-				for( int i =0; i<robots.length; i++ )
-				{
-					robots[i].step();
-				}
-			}
-
-			
-			//System.out.println("KPIсреза в момент времени "+time+" равен: "+kpi);
-			
-			
-		}
-		
-		kpiSolution /= duration;
-		//System.out.println("KPIсреза в момент времени "+duration+" равен : "+kpi);
-		//System.out.println("KPIрешения равен "+kpiSolution);
-		//outputSaturationsMatrix();
-		territory.resetTerritorySaturations();
-		setBeginPositionRobots();
-		
-		return kpiSolution;
-	}
-	
-	/** отображает KPIсреза в заданный момент времени, а также выводит матрицу удовлетворенности */
-	private void computeKpiSolution( int duration, int[][][] posRobs)
-	{
-		double kpi = 0;
-		System.out.println(territory.getCountBarrier());
-		
-		for( int time = 0; time <= duration; time++ )
-		{
-			//System.out.println(time);
-			for( int i = 0; i<robots.length; i++)
-			{
-				//System.out.println("Позиция робота: "+robots[i].getPosX()+" "+robots[i].getPosY()+" Приоритет клетки: "+territory.getTerritoryCell(robots[i].getPosX(), robots[i].getPosY()).getPriority());
-				if ( isHit() ) System.out.println("Роботы все таки встают на одну клетку :-(");
-				//territory.getTerritoryCell(robots[i].getPosX(), robots[i].getPosY()).setSaturationMax();
-			}
-			
-			
-			territory.decrementSaturations(robots);
-			if ( time == duration)
-			{
-				outputSaturationsMatrix();				
-			}
-			
-			kpi = territory.computeKPIperTime();
-			
-			if ( time+1 < durationTime )
-			{
-				for( int i =0; i<robots.length; i++ )
-				{
-					robots[i].setPosition(posRobs[time+1][i][0], posRobs[time+1][i][1]);
-					//territory.getTerritoryCell(robots[i].getPosX(), robots[i].getPosY()).setSaturationMax();
-					territory.setSaturationMax(robots[i].getPosX(), robots[i].getPosY());
-				}
-			}
-			//System.out.println("KPIсреза в момент времени "+time+" равен: "+kpi);
-		}
-		
-		System.out.println("KPIсреза в момент времени "+duration+" равен:"+kpi);
-		
-		//outputSaturationsMatrix();
-		territory.resetTerritorySaturations();
-		setBeginPositionRobots();
-	}
-	
-	/** выводит матрицу удовлетворенности */
-	private void outputSaturationsMatrix()
-	{
-		for ( int y =0; y < territory.getSizeY(); y++)
-		{
-			for ( int x = 0; x < territory.getSizeX(); x++)
-			{
-				System.out.printf("%.2f", territory.getTerritoryCell(x, y).getSaturation());
-				System.out.print(" ");
-			}
-			System.out.println();
-		}
-		System.out.println();
-	}
-	
-	/** обеспечивает диалог */
-	private void reviewSaturationMatrix()
-	{
-		Scanner scanner = new Scanner(System.in);
-		int time;
-		while (true)
-		{
-			try
-			{
-				System.out.println("\nВведите момент времени в диапазоне 0-"+(durationTime-1));
-				time = scanner.nextInt();
-				if ( time < 0 || time >= durationTime )
-				{
-					System.out.println("Недопустимое значение");
-					continue;
-				}
-			}  catch ( InputMismatchException e )
-			{
-				break;
-			}
-			
-			computeKpiSolution(time, coordinatesRobotsPerTime1);
-			computeKpiSolution(time, coordinatesRobotsPerTime2);
-			for (int i = 0; i< robots.length; i++)
-			{
-				System.out.println("Робот "+i+" имеет координаты "+coordinatesRobotsPerTime1[time][i][0]+" "+coordinatesRobotsPerTime1[time][i][1]);
-			}
-		}
-		scanner.close();
-	}
 	
 	/** возвращает true, если тест уже был пройден или false в противном случае(не используется) */
 	private boolean isAlready( int[][][] posRobs, int time)
@@ -374,7 +220,6 @@ public class TestKit {
 	
 	synchronized public void play() 
 	{
-		
 		thread = new Thread(new Runnable()
 		{
 			synchronized public void run()
@@ -389,9 +234,9 @@ public class TestKit {
 						
 						while ( isPause )
 						{
-							//System.out.println("111111");
+							System.out.println("111111");
 							Thread.sleep(3000); //wait();
-							//System.out.println("222222");
+							System.out.println("222222");
 						}
 						//System.out.println("asdasd");
 						step();
@@ -409,6 +254,11 @@ public class TestKit {
 		thread.setName("Моделирование");
 		thread.start();
 
+	}
+	
+	synchronized void myNotify()
+	{
+		notify();
 	}
 	
 	public Thread getThread()
