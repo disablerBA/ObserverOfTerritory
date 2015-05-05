@@ -3,8 +3,7 @@ package ObserverOfTerritory;
 public class TerritoryCell {
 	
 	private int priority;	// приоритет клетки
-	private double saturation = 0, rateDecrement = 0.03;	// удовлетворенность клетки и коэффициент
-															// снижения удовлетворенности соответственно
+	private double saturation = 0;
 	
 	/** конструктор */
 	public TerritoryCell(int priority)
@@ -24,24 +23,6 @@ public class TerritoryCell {
 		return this.saturation;
 	}
 	
-	/** уменьшает удовлетворенность клетки на rateDecrement*priority, если ее приоритет > 0 */
-	final public void decrementSaturation()
-	{
-		//System.out.println("decrementSaturation()");
-		if (priority > 0)
-		{
-			if (this.saturation >= rateDecrement*priority)
-			{
-				//System.out.println("saturation = saturation - rateDecrement*priority");
-				this.saturation = this.saturation - rateDecrement*priority;
-			} else 
-			{
-				//System.out.println("saturation = 0");
-				this.saturation = 0;
-			}
-		}
-	}
-	
 	/** сбрасывает удовлетворенность клетки, если ее приоритет > 0 */
 	final public void resetSaturation()
 	{
@@ -51,7 +32,7 @@ public class TerritoryCell {
 		}
 	}
 	
-	public void setSaturation(int sat)
+	public void setSaturation(double sat)
 	{
 		this.saturation = sat;
 	}

@@ -1,17 +1,13 @@
 package ObserverOfTerritory;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
@@ -26,9 +22,13 @@ import javafx.stage.Stage;
 public class MainClass extends Application implements EventListener {
 
 	private Label stepsLabel2;
+	private Button forwardButton;
+	private Button playButton;
 	private Button multipleX1button;
 	private Button multipleX3button;
 	private Button multipleX10button;
+	private Label instantKpiLabel;
+	private Label solutionKpiLabel;
 	private Viewer viewer;
 	private TestKit tk;
 	
@@ -41,7 +41,7 @@ public class MainClass extends Application implements EventListener {
 	
 	public void start(Stage stage)
 	{		
-		tk = new TestKit(1000, 100, 50, 50);
+		tk = new TestKit(200, 30, 50, 50);
 		tk.addListener(this);
 		
 		stage.setTitle("Среда тестирования");
@@ -90,10 +90,20 @@ public class MainClass extends Application implements EventListener {
 		});
 		
 		
-		TextField coeffField = new TextField(String.valueOf(0.03));
-		coeffField.setEditable(false);
+		TextField rateField = new TextField(String.valueOf(0.03));
+		rateField.setOnAction(new EventHandler<ActionEvent>() {
+			
+			public void handle(ActionEvent event)
+			{
+				while ( !rateField.getText().matches("\\d*\\.\\d*") )
+				{
+					rateField.setText("");
+				}
+				tk.getTerritory().changeRateDecrement(Double.parseDouble(rateField.getText()));
+			}
+		});
 		
-		paneTextField.getChildren().addAll(satMaxField, stepsField, coeffField);
+		paneTextField.getChildren().addAll(satMaxField, stepsField, rateField);
 		paneData.getChildren().addAll(paneLabel, paneTextField);
 		dataTab.setContent(paneData);
 		
@@ -103,14 +113,20 @@ public class MainClass extends Application implements EventListener {
 		paneSim.setVgap(10);
 		//paneSim.setHgap(10);
 		Label satMaxLabel2 = new Label("Макс.удвл. = 1");
+		instantKpiLabel = new Label("");
+		solutionKpiLabel = new Label("");
 		stepsLabel2 = new Label("Шаг "+tk.getTime()+" из "+tk.getDuration());
 		Label coeffLabel2 = new Label("Коэф. уменьш. = 0.03");
 		multipleX1button = new Button("x1");
+		multipleX1button.setDisable(true);
 		multipleX1button.setOnAction(new EventHandler<ActionEvent>() 
 		{
 			public void handle(ActionEvent event)
 			{
 				tk.setMultipleAcceleration(1);
+				multipleX1button.setDisable(true);
+				multipleX3button.setDisable(false);
+				multipleX10button.setDisable(false);
 			}
 		});
 		
@@ -120,6 +136,9 @@ public class MainClass extends Application implements EventListener {
 			public void handle(ActionEvent event)
 			{
 				tk.setMultipleAcceleration(3);
+				multipleX1button.setDisable(false);
+				multipleX3button.setDisable(true);
+				multipleX10button.setDisable(false);
 			}
 		});
 		
@@ -129,10 +148,14 @@ public class MainClass extends Application implements EventListener {
 			public void handle(ActionEvent event)
 			{
 				tk.setMultipleAcceleration(10);
+				multipleX1button.setDisable(false);
+				multipleX3button.setDisable(false);
+				multipleX10button.setDisable(true);
 			}
 		});
 		Button backButton = new Button("Назад");
-		Button forwardButton = new Button("Вперед");
+		backButton.setDisable(true);
+		forwardButton = new Button("Вперед");
 		forwardButton.setOnAction(new EventHandler<ActionEvent>() {
 			
 			@Override
@@ -149,7 +172,7 @@ public class MainClass extends Application implements EventListener {
 			}
 		});
 		
-		Button playButton = new Button("Старт");
+		playButton = new Button("Старт");
 		playButton.setOnAction(new EventHandler<ActionEvent>() {
 			
 			@Override
@@ -160,31 +183,33 @@ public class MainClass extends Application implements EventListener {
 					playButton.setText("Пауза");
 					System.out.println("Будим поток");
 					tk.isPause = false;
-					synchronized(tk)
+					synchronized(tk.getPlayThread())
 					{
-						tk.notifyAll();
+						tk.getPlayThread().notify();
 					}
-					
 					
 				} else
 				{
 					playButton.setText("Старт");
-					
 					tk.isPause = true;
 				}
-				
-				
 			}
 		});
 		paneSim.add(satMaxLabel2,0,0);
-		paneSim.add(stepsLabel2,0,2);
 		paneSim.add(coeffLabel2,0,1);
+		paneSim.add(stepsLabel2,0,2);
 		paneSim.add(backButton,0,3);
 		paneSim.add(forwardButton,1,3);
 		paneSim.add(playButton,0,4);
 		paneSim.add(multipleX1button,0,5);
 		paneSim.add(multipleX3button,1,5);
 		paneSim.add(multipleX10button,2,5);
+		
+		
+		paneSim.add(instantKpiLabel, 0, 6);
+		GridPane.setColumnSpan(instantKpiLabel, 3);
+		paneSim.add(solutionKpiLabel, 0, 7);
+		GridPane.setColumnSpan(solutionKpiLabel, 3);
 		
 		simTab.setContent(paneSim);
 		
@@ -198,6 +223,21 @@ public class MainClass extends Application implements EventListener {
 				}
 				tk.changeSaturationMax(Integer.parseInt(satMaxField.getText()));
 				satMaxLabel2.setText("Макс.удвл. = "+tk.getSaturationMax());
+			}
+		});
+		
+		dataTab.setOnSelectionChanged(new EventHandler<Event>() 
+		{
+			public void handle(Event event)
+			{
+				System.out.println("Жопа");
+				instantKpiLabel.setText("KPI среза: "+Math.rint(tk.getInstantKpi() * 1000 ) / 1000);
+				solutionKpiLabel.setText("KPI решения: "+Math.rint(tk.getSolutionKpi() * 1000) / 1000) ;
+				
+				if ( dataTab.isSelected() )
+				{
+					tk.reset();
+				}
 			}
 		});
 		
@@ -222,8 +262,28 @@ public class MainClass extends Application implements EventListener {
 			{
 				stepsLabel2.setText("Шаг "+tk.getTime()+" из "+tk.getDuration());
 				viewer.paint(tk.getRobots());
+				instantKpiLabel.setText("KPI среза: "+Math.rint(tk.getInstantKpi() * 1000) / 1000 ); 
+				solutionKpiLabel.setText("KPI решения: "+Math.rint( (tk.getSolutionKpi()/(tk.getTime()+1)) * 1000 ) / 1000 ) ;
+				
+				if ( tk.getTime() == tk.getDuration() )
+				{
+					playButton.setDisable(true);
+					playButton.setText("Старт");
+					forwardButton.setDisable(true);
+					tk.isPause = true;
+				} else
+				{
+					playButton.setDisable(false);
+					forwardButton.setDisable(false);
+				}
 				//Platform.exit();
 			}
-		});		
+		});
 	}
+	
+	/*@Override
+	public void stop()
+	{
+		;
+	}*/
 }

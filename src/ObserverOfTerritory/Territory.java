@@ -2,16 +2,12 @@ package ObserverOfTerritory;
 
 import java.util.Random;
 
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
-
 public class Territory {
 
 	//private int[] [][] property ;
 	private TerritoryCell[][] territory;	// массив клеток территории
 	private int maxSaturation = 1;
-	private GraphicsContext gc;
+	private double rateDecrement = 0.03;
 	
 	//private ArrayList<Robot> robots;
 	
@@ -99,6 +95,7 @@ public class Territory {
 		}
 		
 		return averageKPI /= getSizeX()*getSizeY();
+		
 	}
 	
 	/** возвращает размер территории по х */
@@ -140,13 +137,19 @@ public class Territory {
 			for (int y = 0; y < territory[x].length; y++)
 			{
 				
-				if ( !isHitPosition(x, y, robots) ) 
+				if ( !isHitPosition(x, y, robots) && territory[x][y].getPriority() > 0 ) 
 				{
-					territory[x][y].decrementSaturation();
+					if ( territory[x][y].getSaturation() >= rateDecrement * territory[x][y].getPriority() )
+					{
+						//System.out.println("saturation = saturation - rateDecrement*priority");
+						territory[x][y].setSaturation( territory[x][y].getSaturation() - rateDecrement* territory[x][y].getPriority() );
+					} else 
+					{
+						//System.out.println("saturation = 0");
+						territory[x][y].setSaturation(0);
+					}
+					//territory[x][y].decrementSaturation();
 					//paintCell(x,y);
-				} else
-				{
-					//paintRobot(x,y);
 				}
 				
 			}
@@ -182,64 +185,7 @@ public class Territory {
 		}
 		return false;
 	}
-	
-	public void paint(Robot[] robots)
-	{
-		for ( int x = 0; x < territory.length; x++)
-		{
-			for ( int y = 0; y < territory[x].length; y++)
-			{
-				gc.setFill(Color.rgb(0xff, 0xff, 0xff));
-				if ( territory[x][y].getPriority() == -1)
-				{
-					gc.setFill(Color.rgb(0x80, 0x80, 0x80));
-				} 
-				
-				if ( isHitPosition(x, y, robots) )
-				{
-					gc.setFill(Color.rgb(0x00, 0xA0, 0x00));
-					gc.fillRect(10*x, 10*y, 10, 10);
-					gc.setFill(Color.rgb(0xff, 0x00, 0x00));
-					gc.fillRect(10*x+2, 10*y+2, 6, 6);
-					continue;
-				}
-				
-				gc.fillRect(10*x, 10*y, 10, 10);
-			}
-		}
-	}
-	
-	private void paintCell(int x, int y)
-	{
-		int r, g, b;
-		double sat = territory[x][y].getSaturation();
-		if ( territory[x][y].getPriority() > 0 )
-		{
-			b = r = (int)(0xFF-((sat/maxSaturation) * 0xFF) );
-			g = (int)(0xFF-((sat/maxSaturation) * (0xFF - 0xA0)) );
-			gc.setFill(Color.rgb(r,g,b));
-		} else	
-		{
-			if ( territory[x][y].getPriority() == 0 )
-			{
-				gc.setFill(Color.rgb(0xFF, 0xFF, 0x00));
-			} else
-			{
-				gc.setFill(Color.rgb(0x80,0x80,0x80));
-			}
-		}
-				
-		gc.fillRect(10*x, 10*y, 10, 10);
-	}
-	
-	private void paintRobot(int x, int y)
-	{
-		gc.setFill(Color.rgb(0x00, 0xA0, 0x00));
-		gc.fillRect(10*x, 10*y, 10, 10);
-		gc.setFill(Color.rgb(0xff, 0x00, 0x00));
-		gc.fillRect(10*x+2, 10*y+2, 6, 6);
-	}
-	
+
 	final public void setSaturationMax(int x, int y)	// 
 	{
 		territory[x][y].setSaturation(maxSaturation);
@@ -263,5 +209,10 @@ public class Territory {
 	public int getSaturationMax()
 	{
 		return maxSaturation;
+	}
+	
+	public void changeRateDecrement(double rate)
+	{
+		rateDecrement = rate;
 	}
 }

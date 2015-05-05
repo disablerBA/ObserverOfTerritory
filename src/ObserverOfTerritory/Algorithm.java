@@ -53,7 +53,7 @@ public class Algorithm implements IAlgorithm {
 		
 		for ( int i = 0; i < satisfyingCell.size(); i++ )
 		{
-			if ( 	satisfyingCell.get(i).getPriority() == maxPriority 
+			if ( 	satisfyingCell.get(i).getPriority() != 0 
 				&&	satisfyingCell.get(i).getSaturation() == rob.getTerritory().getSaturationMax() )
 			{
 				satisfyingCell.remove(i--);
